@@ -10,7 +10,7 @@ const redeemScriptHex = lockScript.toString('hex');
 console.log('Redeem Script:', redeemScriptHex);
 
 // second step
-const network = bitcoin.networks.testnet;
+const network = bitcoin.networks.testnet; // changed to testnet for testing
 const p2sh = bitcoin.payments.p2sh({ redeem: { output: lockScript, network }, network });
 
 const address = p2sh.address;
@@ -22,32 +22,27 @@ const txb = new bitcoin.TransactionBuilder(network);
 const satoshisToSend = 100000;
 const fee = 10000;
 
-const prevTxHash = '49239eb7285257428a2864ae9775b74e1ee9c580d7a24e88bc5d6b760e14cc0c';
-const prevTxIndex = 0;
+txb.addInput('12cf25913f2d497ee1fa48a9cba46ecf3402154af5e24a70f27f8d19d1b06e40', 0);
+txb.addOutput(address, satoshisToSend);
+txb.addOutput('tb1py3gfzfylfu5axzpquheku8jaga7uxwrpgs3qh4hntqu7jn0yh89qh97gmu', satoshisToSend - fee);
 
-txb.addInput(prevTxHash, prevTxIndex);  
-txb.addOutput(address, satoshisToSend - fee);
-
-const changeAddress = bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey, network }).address;
-txb.addOutput(changeAddress, fee);
-
-txb.sign(0, keyPair);
+txb.sign(0, keyPair, p2sh.redeem.output, null, satoshisToSend);
 
 const rawTx = txb.build().toHex();
 console.log('Raw Transaction:', rawTx);
 
 // fourth question
+const prevTxHash = '12cf25913f2d497ee1fa48a9cba46ecf3402154af5e24a70f27f8d19d1b06e40';
+const prevTxIndex = 0;
 
-const unlockingScript = bitcoin.script.compile([Buffer.from(sha256Hash, 'hex')]);
+const unlockingScript = bitcoin.script.compile([Buffer.from(preImage, 'hex')]);
 const unlockingScriptHex = unlockingScript.toString('hex');
 
-const p2pkhAddress = bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey, network }).address;
-
 const txb2 = new bitcoin.TransactionBuilder(network);
-txb2.addInput(prevTxHash, prevTxIndex, 0, Buffer.from(unlockingScriptHex, 'hex')); // Add the input with unlocking script
-txb2.addOutput(p2pkhAddress, satoshisToSend - fee);
+txb2.addInput(prevTxHash, prevTxIndex, null, Buffer.from(unlockingScriptHex, 'hex'));
+txb2.addOutput('tb1py3gfzfylfu5axzpquheku8jaga7uxwrpgs3qh4hntqu7jn0yh89qh97gmu', satoshisToSend - fee);
 
-txb2.sign(0, keyPair, bitcoin.payments.p2sh({ redeem: { output: lockScript }, network }).redeem.output);
+txb2.sign(0, keyPair, null, bitcoin.Transaction.SIGHASH_ALL, satoshisToSend);
 
 const rawTx2 = txb2.build().toHex();
 console.log('Raw Transaction 2:', rawTx2);
