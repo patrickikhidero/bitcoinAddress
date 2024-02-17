@@ -141,3 +141,6 @@ try {
 } catch (error) {
     console.error(error);
 }
+
+
+// A possible error that requires a fix -- Error: Offset out of bounds when reading output script. Offset: 56, Buffer length: 193
