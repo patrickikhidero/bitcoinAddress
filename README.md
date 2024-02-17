@@ -19,8 +19,7 @@ npm install
 # Run and test each script
 `node walletCreation` -- Wallet creation
 
-`node transactionDecoder` -- Decoding raw transactions (You need an API key from `cryptoapis.io` and the raw transaction you want to decode in order to run this)
-
+`node transactionDecoder` -- Decoding raw transactions 
 `node trxnBuild` -- Building Transactions
 
 # Note
